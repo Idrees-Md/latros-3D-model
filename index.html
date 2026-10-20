@@ -25,6 +25,8 @@
     <span class="dot" style="background:#1f1f24"></span>Hand camera (top, faces down)<br>
     <span class="dot" style="background:#3a4a6b"></span>Face camera (front)<br>
     <span class="dot" style="background:#d62d2d"></span>Two SOS buttons (hold together)<br>
+    <span class="dot" style="background:#2563eb"></span>SOS cancel button (right side)<br>
+    <span class="dot" style="background:#a5a5ad"></span>USB-C charging port (right side)<br>
     <span class="dot" style="background:#2b2b2b"></span>Bluetooth speaker grille<br>
     <span class="dot" style="background:#22c55e"></span>Compartment light: ready<br>
     <span class="dot" style="background:#f59e0b"></span>Compartment light: dose due (tray out)
@@ -1243,6 +1245,39 @@ for (let i = 0; i < 26; i++) {
   }
 }
 
+// ---- right side panel: SOS cancel button + USB-C charging port ----
+const sideX = W / 2;
+const cancelMat = M(0x2563eb, 0.45, 0.05, { emissive: 0x0b2a7a, emissiveIntensity: 0.5 });
+function sideLabel(text, w, h, x, y, z) {
+  const c = document.createElement('canvas'); c.width = 512; c.height = Math.round(512 * h / w);
+  const t = c.getContext('2d');
+  t.fillStyle = 'rgba(255,255,255,0)'; t.fillRect(0, 0, c.width, c.height);
+  t.fillStyle = '#2b1a1f'; t.font = 'bold ' + Math.round(c.height * 0.62) + 'px Arial';
+  t.textAlign = 'center'; t.textBaseline = 'middle'; t.fillText(text, c.width / 2, c.height / 2);
+  const tex = new THREE.CanvasTexture(c);
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: tex, transparent: true }));
+  m.rotation.y = Math.PI / 2; m.position.set(x, y, z); g.add(m);
+}
+// SOS cancel button (blue, recessed ring)
+const cZ = 1.5;
+const cRing = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 0.14, 32), darkMat);
+cRing.rotation.z = Math.PI / 2; cRing.position.set(sideX + 0.05, headerY, cZ); g.add(cRing);
+const cBtn = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.48, 0.3, 32), cancelMat);
+cBtn.rotation.z = Math.PI / 2; cBtn.position.set(sideX + 0.18, headerY, cZ); cBtn.castShadow = true; g.add(cBtn);
+sideLabel('SOS CANCEL', 2.2, 0.42, sideX + 0.03, headerY - 1.0, cZ);
+
+// USB-C charging port: plate, dark slot, metal tongue, charge LED
+const pZ = -0.4, pY = 2.3;
+const plate = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.95, 1.7), maroonD);
+plate.position.set(sideX + 0.05, pY, pZ); g.add(plate);
+const slot = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.34, 0.9), new THREE.MeshStandardMaterial({ color: 0x050507, roughness: 0.6 }));
+slot.position.set(sideX + 0.09, pY, pZ); g.add(slot);
+const tongue = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.1, 0.62), M(0xa5a5ad, 0.3, 0.8));
+tongue.position.set(sideX + 0.11, pY, pZ); g.add(tongue);
+const chgLed = new THREE.Mesh(new THREE.SphereGeometry(0.09, 16, 16), M(0x22c55e, 0.5, 0, { emissive: 0x16a34a, emissiveIntensity: 1.0 }));
+chgLed.position.set(sideX + 0.12, pY, pZ + 0.68); g.add(chgLed);
+sideLabel('USB-C 5V', 1.6, 0.36, sideX + 0.03, pY - 0.85, pZ);
+
 // side accents
 [-W / 2, W / 2].forEach((x, i) => {
   const e = new THREE.Mesh(new THREE.BoxGeometry(0.14, H, 0.14), i ? maroonD : maroon);
@@ -1258,6 +1293,7 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix();
   renderer.setSize(holder.clientWidth, holder.clientHeight);
 });
+window.__cam = camera; window.__controls = controls;
 (function loop() { requestAnimationFrame(loop); controls.update(); renderer.render(scene, camera); })();
 </script>
 </body>
